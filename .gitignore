@@ -1,5 +1,10 @@
 *.pcap
 *.pcapng
+*.cap
 *-esp_sa
 *-decryption-report.txt
 __pycache__/
+.venv/
+build/
+dist/
+*.spec

@@ -1,0 +1,51 @@
+name: Build Single Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - "main.py"
+      - "core.py"
+      - "requirements-build.txt"
+      - "build.ps1"
+      - ".github/workflows/build-windows.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python (build machine only)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Wireshark runtime (build machine only)
+        shell: powershell
+        run: |
+          choco install wireshark -y --no-progress
+          if (-not (Test-Path "C:\Program Files\Wireshark\tshark.exe")) {
+            throw "TShark was not installed where expected."
+          }
+
+      - name: Build self-contained EXE
+        shell: powershell
+        run: |
+          .\build.ps1 -WiresharkDir "C:\Program Files\Wireshark"
+
+      - name: Show artifact size
+        shell: powershell
+        run: |
+          Get-Item ".\dist\IPsecDecryptor.exe" |
+            Select-Object Name, Length, LastWriteTime
+
+      - name: Upload single EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: IPsecDecryptor-Windows-x64
+          path: dist/IPsecDecryptor.exe
+          if-no-files-found: error
