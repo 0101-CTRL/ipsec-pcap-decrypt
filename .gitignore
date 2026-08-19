@@ -1,0 +1,5 @@
+*.pcap
+*.pcapng
+*-esp_sa
+*-decryption-report.txt
+__pycache__/
